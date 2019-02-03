@@ -1,17 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using kalkulacka.src;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace kalkulacka
 {
@@ -20,9 +10,52 @@ namespace kalkulacka
     /// </summary>
     public partial class MainWindow : Window
     {
+        private MainLogic logic;
         public MainWindow()
-        {
+        {          
             InitializeComponent();
+            logic = new MainLogic(TextField);
+        }
+
+        private void NumberButton(object sender, RoutedEventArgs e)
+        {
+            if (logic.IsResultOnDisplay)
+            {
+                TextField.Text = "";
+                logic.IsResultOnDisplay = false;
+            }
+            if ( ((Button)sender).Content.ToString() == "." && TextField.Text.Contains('.'))
+            {
+                return;
+            }
+            TextField.Text += ((Button)sender).Content;
+        }
+        private void OperationButton(object sender, RoutedEventArgs e)
+        {
+            switch (((Button)sender).Content)
+            {
+                case "=":
+                    logic.ResultOperation();
+                    break;
+                case "+":
+                    logic.MathOperation(EOperation.ADD);
+                    break;
+                case "-":
+                    logic.MathOperation(EOperation.SUB);
+                    break;
+                case "*":
+                    logic.MathOperation(EOperation.MUL);
+                    break;
+                case "/":
+                    logic.MathOperation(EOperation.DIV);
+                    break;
+                case "AC":
+                    logic.ClearOperation();
+                    break;
+                case "+/-":
+                    logic.Negation();
+                    break;
+            }
         }
     }
 }
