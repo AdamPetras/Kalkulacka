@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 
 namespace kalkulacka.src
 {
@@ -28,11 +22,11 @@ namespace kalkulacka.src
 
         public void ResultOperation()
         {
-            if (_textBlock.Text == "")
+            if (_textBlock.Text == "" || _oper == EOperation.NONE)
             {
                 return;
             }
-            Calculate(memValue1, float.Parse(_textBlock.Text, CultureInfo.InvariantCulture.NumberFormat), _oper);
+            Calculate(memValue1, float.Parse(_textBlock.Text), _oper);
             memValue1 = 0;
             memValue2 = 0;
             IsResultOnDisplay = true;
@@ -44,24 +38,24 @@ namespace kalkulacka.src
             _textBlock.Text = "";
             memValue1 = 0; 
             memValue2 = 0;
+            _history.Items.Clear();
             _oper = EOperation.NONE;
         }
 
         public void Negation()
         {
-            if (_textBlock.Text == "")
+            if (float.TryParse(_textBlock.Text, out memValue1))
             {
-                return;
+                memValue1 *= -1;
+                _textBlock.Text = memValue1.ToString();
+                ListBoxItem itm = new ListBoxItem();
+                itm.Content = new HistoryItem(memValue1 * -1, -1, memValue1, EOperation.MUL).ToString();
+                _history.Items.Add(itm);
+                _history.SelectedIndex = _history.Items.Count - 1;  //nastavení scrollbaru na poslední výpočet
+                _history.ScrollIntoView(_history.SelectedItem);
+                memValue1 = 0;
+                IsResultOnDisplay = true;
             }
-            float memValue1 = float.Parse(_textBlock.Text, CultureInfo.InvariantCulture.NumberFormat);
-            memValue1 *= -1;
-            _textBlock.Text = memValue1.ToString();
-            ListBoxItem itm = new ListBoxItem();
-            itm.Content = new HistoryItem(memValue1*-1, -1, memValue1, EOperation.MUL).ToString();
-            _history.Items.Add(itm);
-            _history.SelectedIndex = _history.Items.Count - 1;  //nastavení scrollbaru na poslední výpočet
-            _history.ScrollIntoView(_history.SelectedItem);
-            IsResultOnDisplay = true;
         }
 
         private void Calculate(float value1, float value2, EOperation oper)
@@ -103,7 +97,7 @@ namespace kalkulacka.src
             {
                 return;            
             }
-            float value = float.Parse(_textBlock.Text, CultureInfo.InvariantCulture.NumberFormat);
+            float value = float.Parse(_textBlock.Text);
             if (memValue1 == 0)
             {
                 memValue1 = value;
@@ -112,7 +106,7 @@ namespace kalkulacka.src
             }
             else
             {
-                Calculate(memValue1, float.Parse(_textBlock.Text, CultureInfo.InvariantCulture.NumberFormat), oper);
+                Calculate(memValue1, float.Parse(_textBlock.Text), oper);
                 IsResultOnDisplay = true;
                 this._oper = oper;
             }       
