@@ -14,7 +14,7 @@ namespace kalkulacka
         public MainWindow()
         {          
             InitializeComponent();
-            logic = new MainLogic(TextField);
+            logic = new MainLogic(TextField, HistoryPanel);
         }
 
         private void NumberButton(object sender, RoutedEventArgs e)

@@ -48,7 +48,7 @@
             <Button Content="=" Grid.Column="2" Grid.Row="4" Margin="5" Click="OperationButton"/>
             <Button Content="+" Grid.Column="3" Grid.Row="4" Margin="5" Click="OperationButton"/>
         </Grid>
-        <ListBox Grid.Row="0"/>
+        <ListBox Grid.Row="0" Name="HistoryPanel"/>
         <TextBlock TextWrapping="Wrap" Name="TextField" Grid.Row="1" FontSize="20" FontWeight="Bold" TextAlignment="Right" Text="" VerticalAlignment="Center" />
     </Grid>
 </Window>

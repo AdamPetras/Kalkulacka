@@ -10,12 +10,14 @@ namespace kalkulacka.src
     {
         private float _value1;
         private float _value2;
+        private float _result;
         private EOperation _operation;
 
-        public HistoryItem(float value1, float value2, EOperation oper)
+        public HistoryItem(float value1, float value2,float result, EOperation oper)
         {
             _value1 = value1;
             _value2 = value2;
+            _result = result;
             _operation = oper;
         }
         private string OperationToString()
@@ -34,7 +36,7 @@ namespace kalkulacka.src
         }
         public override string ToString()
         {
-            return _value1 + ""+ OperationToString()+ "" + _value2;
+            return _value1 + " "+ OperationToString()+ " " + _value2+" = "+_result;
         }
     }
 }

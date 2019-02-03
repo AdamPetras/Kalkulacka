@@ -11,17 +11,19 @@ namespace kalkulacka.src
     class MainLogic
     {
         private TextBlock _textBlock;
+        private ListBox _history;
         private float memValue1;
         private float memValue2;
         private EOperation _oper;
-        public bool IsResultOnDisplay { get; set; }
+                public bool IsResultOnDisplay { get; set; }
 
-        public MainLogic(TextBlock textBlock)
+        public MainLogic(TextBlock textBlock, ListBox historyList)
         {
             memValue1 = 0;
             memValue2 = 0;
             _oper = EOperation.NONE;
             _textBlock = textBlock;
+            _history = historyList;
         }
 
         public void ResultOperation()
@@ -40,18 +42,26 @@ namespace kalkulacka.src
         public void ClearOperation()
         {
             _textBlock.Text = "";
-            memValue1 = 0;
+            memValue1 = 0; 
             memValue2 = 0;
             _oper = EOperation.NONE;
         }
 
         public void Negation()
         {
-            if (float.TryParse(_textBlock.Text, out memValue1))
+            if (_textBlock.Text == "")
             {
-                memValue1 *= -1;
-                _textBlock.Text = memValue1.ToString();
+                return;
             }
+            float memValue1 = float.Parse(_textBlock.Text, CultureInfo.InvariantCulture.NumberFormat);
+            memValue1 *= -1;
+            _textBlock.Text = memValue1.ToString();
+            ListBoxItem itm = new ListBoxItem();
+            itm.Content = new HistoryItem(memValue1*-1, -1, memValue1, EOperation.MUL).ToString();
+            _history.Items.Add(itm);
+            _history.SelectedIndex = _history.Items.Count - 1;  //nastavení scrollbaru na poslední výpočet
+            _history.ScrollIntoView(_history.SelectedItem);
+            IsResultOnDisplay = true;
         }
 
         private void Calculate(float value1, float value2, EOperation oper)
@@ -80,6 +90,11 @@ namespace kalkulacka.src
                 }
                 else _textBlock.Text = "DIV Err";
             }
+            ListBoxItem itm = new ListBoxItem();
+            itm.Content = new HistoryItem(value1, value2, memValue1, oper).ToString();
+            _history.Items.Add(itm);
+            _history.SelectedIndex = _history.Items.Count - 1;  //nastavení scrollbaru na poslední výpočet
+            _history.ScrollIntoView(_history.SelectedItem);
         }
 
         public void MathOperation(EOperation oper)
