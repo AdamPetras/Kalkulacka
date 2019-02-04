@@ -20,10 +20,22 @@ namespace kalkulacka
 
         private void InputButton(object sender, RoutedEventArgs e)
         {
-            if(TextField.Text.Length>0)
-            if (MainLogic.IsOperator(TextField.Text[TextField.Text.Length - 1]) && MainLogic.IsOperator(((Button)sender).Content.ToString()[0]))
+            if (logic.IsError)
             {
-                return;
+                TextField.Text = "";
+                logic.IsError = false;
+            }
+            if (TextField.Text.Length > 0)
+            {
+                if (MainLogic.IsOperator(TextField.Text[TextField.Text.Length - 1]) && MainLogic.IsOperator(((Button)sender).Content.ToString()[0]))
+                {
+                    return;
+                }
+            }
+            else
+            {       // pokud nemůžeme vložit první operaci poté číslo (vyjímka je mínus a plus)
+                if (((Button)sender).Content.ToString() == "*" || ((Button)sender).Content.ToString() == "/")
+                    return;
             }
             //rozdělení výrazu na podřetězce
             string LastExpression = TextField.Text.Split('+','-','*','/').Last();
@@ -32,6 +44,7 @@ namespace kalkulacka
             {
                 return;
             }
+            
             TextField.Text += ((Button)sender).Content;
         }
         private void OperationButton(object sender, RoutedEventArgs e)

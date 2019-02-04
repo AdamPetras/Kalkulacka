@@ -9,12 +9,13 @@ namespace kalkulacka.src
         private TextBlock _textBlock;
         private ListBox _history;
         private Stack<char> _stackOperator;
-
+        public bool IsError;
         public MainLogic(TextBlock textBlock, ListBox historyList)
         {
             _stackOperator = new Stack<char>();
             _textBlock = textBlock;
             _history = historyList;
+            IsError = false;
         }
 
         public static bool IsOperator(char c)
@@ -68,7 +69,7 @@ namespace kalkulacka.src
             return output;
         }
 
-        private double evaluatePrefix(List<string> prefix)
+        private string evaluatePrefix(List<string> prefix)
         {
             Stack<double> result = new Stack<double>();
             for (int j = 0; j < prefix.Count; j++)
@@ -94,13 +95,19 @@ namespace kalkulacka.src
                                     result.Push(o1 * o2);
                                     break;
                                 case "/":
-                                    result.Push(o1 / o2);
+                                    if (o2 == 0)    //pokud dělím nulou
+                                    {
+                                        IsError = true;
+                                        return "Div Err";
+                                    }
+                                    else
+                                        result.Push(o1 / o2);
                                     break;
                             }
                         }
                     }
             }           
-            return result.Pop();
+            return result.Pop().ToString();
         }
 
         private int Priority(char c)
@@ -116,7 +123,7 @@ namespace kalkulacka.src
         {
             string text = _textBlock.Text;
             List<string> prefix = InfixToPrefix(_textBlock.Text);
-            _textBlock.Text = evaluatePrefix(prefix).ToString();
+            _textBlock.Text = evaluatePrefix(prefix);
             ListBoxItem itm = new ListBoxItem();
             itm.Content = text+" = "+_textBlock.Text;
             _history.Items.Add(itm);
