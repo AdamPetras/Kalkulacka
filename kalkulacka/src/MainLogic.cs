@@ -1,4 +1,6 @@
-﻿using System.Windows.Controls;
+﻿using System;
+using System.Collections.Generic;
+using System.Windows.Controls;
 
 namespace kalkulacka.src
 {
@@ -6,111 +8,141 @@ namespace kalkulacka.src
     {
         private TextBlock _textBlock;
         private ListBox _history;
-        private float memValue1;
-        private float memValue2;
-        private EOperation _oper;
-                public bool IsResultOnDisplay { get; set; }
+        private Stack<char> _stackOperator;
 
         public MainLogic(TextBlock textBlock, ListBox historyList)
         {
-            memValue1 = 0;
-            memValue2 = 0;
-            _oper = EOperation.NONE;
+            _stackOperator = new Stack<char>();
             _textBlock = textBlock;
             _history = historyList;
         }
 
+        public static bool IsOperator(char c)
+        {
+            if (c == '+')
+                return true;
+            if (c == '-')
+                return true;
+            if (c == '*')
+                return true;
+            if (c == '/')
+                return true;
+            return false;
+        }
+
+        private List<string> InfixToPrefix(string infix)
+        {
+            string str = "";
+            bool ifTheFistIsSub = false;
+            if (infix.Length > 0)
+            {
+                if (infix[0] == '-')
+                ifTheFistIsSub = true;
+            }
+            List<string> output = new List<string>();
+            for (int i = 0; i < infix.Length; i++)
+            {
+                if (!IsOperator(infix[i]) || ifTheFistIsSub)
+                {
+                    ifTheFistIsSub = false;
+                    str += infix[i];
+                    continue;
+                }
+                else
+                {
+                    output.Add(str);
+                    str = "";
+                    while (_stackOperator.Count > 0 && Priority(_stackOperator.Peek())   //lazy evaluation
+                        >= Priority(infix[i]))
+                    {
+                        output.Add(_stackOperator.Pop().ToString());
+                    }
+                    _stackOperator.Push(infix[i]);
+                }
+            }
+            output.Add(str);
+            while (_stackOperator.Count > 0)
+            {
+                output.Add(_stackOperator.Pop().ToString());
+            }
+            return output;
+        }
+
+        private double evaluatePrefix(List<string> prefix)
+        {
+            Stack<double> result = new Stack<double>();
+            for (int j = 0; j < prefix.Count; j++)
+            {
+                if (prefix[j] != "")
+                    if (!IsOperator(prefix[j][0]) || prefix[j].Length > 1)  //druhá podmínka se splní pokud máme záporné číslo na začátku
+                        result.Push(Convert.ToDouble(prefix[j])); //odečtení char hodnoty '0'
+                    else
+                    {
+                        if (result.Count > 1)
+                        {
+                            double o2 = result.Pop();    //výběr operandů
+                            double o1 = result.Pop();
+                            switch (prefix[j])  //switch operací a push na stack
+                            {
+                                case "+":
+                                    result.Push(o1 + o2);
+                                    break;
+                                case "-":
+                                    result.Push(o1 - o2);
+                                    break;
+                                case "*":
+                                    result.Push(o1 * o2);
+                                    break;
+                                case "/":
+                                    result.Push(o1 / o2);
+                                    break;
+                            }
+                        }
+                    }
+            }           
+            return result.Pop();
+        }
+
+        private int Priority(char c)
+        {
+            if (c == '+' || c == '-')
+                return 2;
+            if (c == '*' || c == '/')
+                return 3;
+            return 0;
+        }
+
         public void ResultOperation()
         {
-            if (_textBlock.Text == "" || _oper == EOperation.NONE)
-            {
-                return;
-            }
-            Calculate(memValue1, float.Parse(_textBlock.Text), _oper);
-            memValue1 = 0;
-            memValue2 = 0;
-            IsResultOnDisplay = true;
-            
+            string text = _textBlock.Text;
+            List<string> prefix = InfixToPrefix(_textBlock.Text);
+            _textBlock.Text = evaluatePrefix(prefix).ToString();
+            ListBoxItem itm = new ListBoxItem();
+            itm.Content = text+" = "+_textBlock.Text;
+            _history.Items.Add(itm);
+            _history.SelectedIndex = _history.Items.Count - 1;
+            _history.ScrollIntoView(_history.SelectedItem);
+            _stackOperator.Clear();
         }
 
         public void ClearOperation()
         {
             _textBlock.Text = "";
-            memValue1 = 0; 
-            memValue2 = 0;
+            _stackOperator.Clear();
             _history.Items.Clear();
-            _oper = EOperation.NONE;
         }
 
         public void Negation()
         {
-            if (float.TryParse(_textBlock.Text, out memValue1))
-            {
-                memValue1 *= -1;
-                _textBlock.Text = memValue1.ToString();
-                AddItemToHistory(memValue1*-1,-1,memValue1,EOperation.MUL);
-                memValue1 = 0;
-                IsResultOnDisplay = true;
-            }
-        }
-
-        private void AddItemToHistory(float value1, float value2, float result, EOperation oper)
-        {
+            ResultOperation();
+            double val = Convert.ToDouble(_textBlock.Text);
+            val *= -1;
             ListBoxItem itm = new ListBoxItem();
-            itm.Content = new HistoryItem(value1, value2, result, oper).ToString();
+            itm.Content = val*-1 + "*(-1) = " + val;
             _history.Items.Add(itm);
-            _history.SelectedIndex = _history.Items.Count - 1;  //nastavení scrollbaru na poslední výpočet
+            _history.SelectedIndex = _history.Items.Count - 1;
             _history.ScrollIntoView(_history.SelectedItem);
-        }
-
-        private void Calculate(float value1, float value2, EOperation oper)
-        {
-            if (oper == EOperation.ADD)
-            {
-                memValue1 = value1 + value2;
-                _textBlock.Text = memValue1.ToString();
-            }
-            if (oper == EOperation.SUB)
-            {
-                memValue1 = value1 - value2;
-                _textBlock.Text = memValue1.ToString();
-            }
-            if (oper == EOperation.MUL)
-            {
-                memValue1 = value1 * value2;
-                _textBlock.Text = memValue1.ToString();
-            }
-            if (oper == EOperation.DIV)
-            {
-                if (value2 != 0)
-                {
-                    memValue1 = value1 / value2;
-                    _textBlock.Text = memValue1.ToString();
-                }
-                else _textBlock.Text = "DIV Err";
-            }
-            AddItemToHistory(value1, value2, memValue1, oper);
-        }
-
-        public void MathOperation(EOperation oper)
-        {
-            if (_textBlock.Text == "")
-            {
-                return;            
-            }
-            float value = float.Parse(_textBlock.Text);
-            if (memValue1 == 0)
-            {
-                memValue1 = value;
-                _textBlock.Text = "";
-                this._oper = oper;
-            }
-            else
-            {
-                Calculate(memValue1, float.Parse(_textBlock.Text), oper);
-                IsResultOnDisplay = true;
-                this._oper = oper;
-            }       
+            _textBlock.Text = val.ToString();
         }
     }
 }

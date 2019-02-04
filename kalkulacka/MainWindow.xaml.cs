@@ -1,4 +1,5 @@
 ﻿using kalkulacka.src;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,14 +18,17 @@ namespace kalkulacka
             logic = new MainLogic(TextField, HistoryPanel);
         }
 
-        private void NumberButton(object sender, RoutedEventArgs e)
+        private void InputButton(object sender, RoutedEventArgs e)
         {
-            if (logic.IsResultOnDisplay)
+            if(TextField.Text.Length>0)
+            if (MainLogic.IsOperator(TextField.Text[TextField.Text.Length - 1]) && MainLogic.IsOperator(((Button)sender).Content.ToString()[0]))
             {
-                TextField.Text = "";
-                logic.IsResultOnDisplay = false;
+                return;
             }
-            if ( ((Button)sender).Content.ToString() == "." && TextField.Text.Contains('.'))
+            //rozdělení výrazu na podřetězce
+            string LastExpression = TextField.Text.Split('+','-','*','/').Last();
+            //pokud poslední část výrazu již obsahuje desetinnou tečku neni možné vložit další
+            if (LastExpression.Contains(',') && ((Button)sender).Content.ToString() == ",")
             {
                 return;
             }
@@ -36,18 +40,6 @@ namespace kalkulacka
             {
                 case "=":
                     logic.ResultOperation();
-                    break;
-                case "+":
-                    logic.MathOperation(EOperation.ADD);
-                    break;
-                case "-":
-                    logic.MathOperation(EOperation.SUB);
-                    break;
-                case "*":
-                    logic.MathOperation(EOperation.MUL);
-                    break;
-                case "/":
-                    logic.MathOperation(EOperation.DIV);
                     break;
                 case "AC":
                     logic.ClearOperation();
