@@ -48,14 +48,19 @@ namespace kalkulacka.src
             {
                 memValue1 *= -1;
                 _textBlock.Text = memValue1.ToString();
-                ListBoxItem itm = new ListBoxItem();
-                itm.Content = new HistoryItem(memValue1 * -1, -1, memValue1, EOperation.MUL).ToString();
-                _history.Items.Add(itm);
-                _history.SelectedIndex = _history.Items.Count - 1;  //nastavení scrollbaru na poslední výpočet
-                _history.ScrollIntoView(_history.SelectedItem);
+                AddItemToHistory(memValue1*-1,-1,memValue1,EOperation.MUL);
                 memValue1 = 0;
                 IsResultOnDisplay = true;
             }
+        }
+
+        private void AddItemToHistory(float value1, float value2, float result, EOperation oper)
+        {
+            ListBoxItem itm = new ListBoxItem();
+            itm.Content = new HistoryItem(value1, value2, result, oper).ToString();
+            _history.Items.Add(itm);
+            _history.SelectedIndex = _history.Items.Count - 1;  //nastavení scrollbaru na poslední výpočet
+            _history.ScrollIntoView(_history.SelectedItem);
         }
 
         private void Calculate(float value1, float value2, EOperation oper)
@@ -84,11 +89,7 @@ namespace kalkulacka.src
                 }
                 else _textBlock.Text = "DIV Err";
             }
-            ListBoxItem itm = new ListBoxItem();
-            itm.Content = new HistoryItem(value1, value2, memValue1, oper).ToString();
-            _history.Items.Add(itm);
-            _history.SelectedIndex = _history.Items.Count - 1;  //nastavení scrollbaru na poslední výpočet
-            _history.ScrollIntoView(_history.SelectedItem);
+            AddItemToHistory(value1, value2, memValue1, oper);
         }
 
         public void MathOperation(EOperation oper)
